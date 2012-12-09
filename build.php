@@ -2,6 +2,7 @@
 $files = Array(
     "zero.plot.js",
     "zero.col.js",
+    "zero.line.js",
     "zero.init.js",
     "zero.generate.js"
 );

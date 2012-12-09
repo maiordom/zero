@@ -35,7 +35,7 @@ Zero.Col = function( props, config ) {
         } else {
             setTimeout( function() {
                 event.draw ? event.draw( col.selectAll( "rect" ) ) : null;
-            }, props.mc + 100 );
+            }, props.mc );
         }
     }
 

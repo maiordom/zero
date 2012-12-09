@@ -2,7 +2,7 @@
 Zero = {};
 Zero.Plot = function( node, config ) {
     var wOrig, hOrig, w, h, yScale, svg, colsBlock,
-        charts = [], axis = {},
+        charts = {}, axis = {},
         margin = { left: 35, top: 100, right: 130, bottom: 150 };
 
     function init() {
@@ -13,7 +13,7 @@ Zero.Plot = function( node, config ) {
         drawXAxis();
         drawHelper();
         readSeries();
-        charts[ charts.length - 1 ].on( "draw", onDrawLastCol );
+        charts.col[ charts.col.length - 1 ].on( "draw", drawLegends );
     }
 
     function setParams( width, height ) {
@@ -57,42 +57,26 @@ Zero.Plot = function( node, config ) {
         });
     }
 
-    function onDrawLastCol( nodes ) {
-        var transform, coords = [], box;
+    function drawLegends( nodes ) {
+        var transform, coords = [], colItems = [], item;
 
-        transform = "translate(" + ( margin.left + w ) + "," + margin.top + ")";
-
-        axis.yHelpers = svg.append( "g" ).attr({
-            class: "axis-helpers",
-            transform: transform
-        });
-
-        nodes[ 0 ].reverse();
-
-        console.log( nodes.node(0) );
+        transform = "translate(" + ( margin.left + w + 10 ) + "," + margin.top + ")";
+        axis.legends = svg.append( "g" ).attr( { "class": "legends", transform: transform } );
 
         nodes.each( function( d, i ) {
-            box = d3.select( this ).node().getBBox();
-            box.y += 10;
-            coords.push( box );
-        });
+            item = axis.legends
+                .append( "g" )
+                .attr( { transform: "translate(0," + ( i * 15 ) + ")" } );
 
-        forEach( coords, function( item, i ) {
-            if ( i > 0 ) {
-                if ( coords [ i ].y - coords[ i - 1 ].y < 15 ) {
-                    coords [ i ].y = coords[ i - 1 ].y + 15;
-                }
-            }
-        });
-
-        nodes.each( function( d, i ) {
-            axis.yHelpers
+            item
                 .append( "text" )
                 .text( config.axisY.helpers[ i ] )
-                .attr( { y: coords[ i ].y, x: 10 } );
-        });
+                .attr( { x: 20 } );
 
-        console.log( )
+            item
+                .append( "path" )
+                .attr( { transform: "translate(0, -3)", d: "M0,0 H15", stroke: config.colsColor[ nodes[ 0 ].length - i - 1 ] } );
+        });
     }
 
     function drawXAxis() {
@@ -116,10 +100,8 @@ Zero.Plot = function( node, config ) {
     }
 
     function drawHelper() {
-        colsBlock = svg.append( "g" ).attr({
-            "class": "cols",
-            transform: "translate(" + margin.left + "," + margin.top + ")"
-        });
+        var transform = "translate(" + margin.left + "," + margin.top + ")";
+        colsBlock = svg.append( "g" ).attr( { "class": "cols", transform: transform } );
     }
 
     function readSeries() {
@@ -132,7 +114,7 @@ Zero.Plot = function( node, config ) {
     }
 
     function drawCols( data ) {
-        var props, chartData, chart, index = -1, offset = 0;
+        var props, chartData, chart, index = -1, offset = 0; charts.col = [];
 
         forEach( data, function( item, i ) {
             chartData = data[ i ].data;
@@ -151,12 +133,14 @@ Zero.Plot = function( node, config ) {
             };
 
             chart = Zero.Col( props );
-            charts.push( chart );
+            charts.col.push( chart );
         });
     }
 
     function drawLine( data ) {
+        var props = { svg: svg, min: config.min, max: config.max, margin: margin, h: h, w: w };
 
+        charts.line = Zero.Line( data, props );
     }
 
     function getTimeByValue( data ) {
@@ -214,7 +198,7 @@ Zero.Col = function( props, config ) {
         } else {
             setTimeout( function() {
                 event.draw ? event.draw( col.selectAll( "rect" ) ) : null;
-            }, props.mc + 100 );
+            }, props.mc );
         }
     }
 
@@ -263,6 +247,73 @@ Zero.Col = function( props, config ) {
     return {
         on: on
     };
+};
+
+Zero.Line = function( data, config ) {
+    var timeInterval, line, path, lineData = [];
+
+    function init() {
+        setLine();
+        createNodes();
+        drawLine();
+        bindEvents();
+    }
+
+    function setLine() {
+        var xScale = d3.scale.linear().domain( [ 0, config.w ] ).range( [ 0, config.w ] ),
+            yScale = d3.scale.linear().domain( [ config.min, config.max ] ).range( [ config.h, 0 ] );
+
+        line = d3.svg.line()
+            .x( function( d, i ) { return xScale( i * config.w / data.length ); } )
+            .y( function( d, i ) { return yScale( getSum( d ) ); } );
+    }
+
+    function createNodes() {
+        var blockTransform = "translate(" + ( config.margin.left + 1 ) + "," + config.margin.top + ")";
+
+        var block = config.svg
+            .append( "g" )
+            .attr( { "class": "line", transform: blockTransform } );
+
+        path = block.append( "path" ).attr( { "class": "line-path" } );
+    }
+
+    function getSum( data ) {
+        var sum = 0;
+        forEach( data, function( item, i ) {
+            sum += item;
+        });
+
+        return sum;
+    }
+
+    function drawLine() {
+        var i = 0;
+        timeInterval = setInterval( function() {
+            if ( i < data.length ) {
+                lineData.push( data[ i++ ] );
+                path.attr( "d", line( lineData ) );
+            } else {
+                clearInterval( timeInterval )
+            }
+        }, 600 / data.length );
+    }
+
+    function bindEvents() {
+        path
+            .on( "mouseover", onLineMouseOver )
+            .on( "mouseout",  onLineMouseOut );
+    }
+
+    function onLineMouseOver() {
+
+    }
+
+    function onLineMouseOut() {
+
+    }
+
+    init();
 };
 
 Zero.Init = function() {
@@ -390,14 +441,21 @@ Zero.Generate = function() {
     }
 
     function generateDates() {
-        var dates = [];
+        var dates = [], data = [];
 
-        iterate( 0, datesCount, function() {
+        data = [
+            mtRand( 50000, 155000 ),
+            mtRand( 5000, 15000 ),
+            mtRand( 5000, 15000 ),
+            mtRand( 13000, 15000 )
+        ];
+
+        iterate( 0, datesCount, function( i ) {
             dates.push([
-                mtRand( 50000, 155000 ),
-                mtRand( 5000, 15000 ),
-                mtRand( 5000, 15000 ),
-                mtRand( 13000, 15000 )
+                data[ 0 ],
+                data[ 1 ] + mtRand( -3000, 3000 ),
+                data[ 2 ] + mtRand( -3000, 3000 ),
+                data[ 3 ] + mtRand( -3000, 3000 )
             ]);
             setNextDate();
         });

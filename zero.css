@@ -8,6 +8,12 @@
         .axis line { shape-rendering: crispedges; stroke: #000;    stroke-width: 1px; }
         .axis path { shape-rendering: crispedges; stroke: #4e534f; stroke-width: 1px; }
         
-    .axis.x line { stroke: #4e534f; }
+        .axis.x line { stroke: #4e534f; }
 
-    .axis-helpers {}
+    .legends {}
+        .legends g {}
+            .legends path { stroke-width: 3px; }
+            .legends text { cursor: default; }
+
+    .line {}
+        .line-path { stroke-width: 3px; stroke: #a7a5b0; fill: none; opacity: .6; }

@@ -72,14 +72,21 @@ Zero.Generate = function() {
     }
 
     function generateDates() {
-        var dates = [];
+        var dates = [], data = [];
 
-        iterate( 0, datesCount, function() {
+        data = [
+            mtRand( 50000, 155000 ),
+            mtRand( 5000, 15000 ),
+            mtRand( 5000, 15000 ),
+            mtRand( 13000, 15000 )
+        ];
+
+        iterate( 0, datesCount, function( i ) {
             dates.push([
-                mtRand( 50000, 155000 ),
-                mtRand( 5000, 15000 ),
-                mtRand( 5000, 15000 ),
-                mtRand( 13000, 15000 )
+                data[ 0 ],
+                data[ 1 ] + mtRand( -3000, 3000 ),
+                data[ 2 ] + mtRand( -3000, 3000 ),
+                data[ 3 ] + mtRand( -3000, 3000 )
             ]);
             setNextDate();
         });
