@@ -50,7 +50,7 @@ Zero.Plot = function( node, config ) {
         var x;
 
         forEach( config.axisX.ticks, function( item, i ) {
-            x = xOffset( i ) * 30 + xOffset( i );
+            x = xOffset( i ) * 35 + xOffset( i );
             axis.y.append( "line" ).attr( { x1: x, y1: 0, x2: x, y2: 4 } );
             axis.y.append( "text" ).text( item ).attr( { x: x + 3, y: 17 } );
         });

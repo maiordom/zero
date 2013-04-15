@@ -41,8 +41,8 @@ Zero.Col = function( props, config ) {
 
     function drawColItem( props ) {
         var attr = {
-            width: 30,
-            x: 30 * props.index + props.offset,
+            width: 35,
+            x: 35 * props.index + props.offset,
             y: props.border - props.colHeight,
             fill: props.colors[ props.locIndex ]
         };

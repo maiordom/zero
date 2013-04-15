@@ -15,8 +15,8 @@ Zero.Init = function() {
             tickSize: 5,
             helpers: [ "Удаленные", "Без фото", "Заблокированные", "Нормальные" ]
         },
-        width: 911,
-        height: 410,
+        width: 1031,
+        height: 510,
         title: {
             text: "состав группы"
         },
